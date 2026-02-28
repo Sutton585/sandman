@@ -208,8 +208,11 @@ __marimo__/
 
 # Personal data — never commit contents
 email/*
+!email/.gitkeep
 db/*
+!db/.gitkeep
 logs/*
+!logs/.gitkeep
 
 # Credentials
 auth/
