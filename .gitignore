@@ -216,6 +216,7 @@ logs/*
 
 # Credentials
 auth/
+!auth/.gitkeep
 
 # API keys
 client_secret*.json
