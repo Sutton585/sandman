@@ -215,7 +215,7 @@ logs/*
 !logs/.gitkeep
 
 # Credentials
-auth/
+auth/*
 !auth/.gitkeep
 
 # API keys
