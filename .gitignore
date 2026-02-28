@@ -206,7 +206,17 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# Personal data — never commit contents
+email/*
+db/*
+logs/*
 
-# API Related
+# Credentials
+auth/
+
+# API keys
 client_secret*.json
+token.json
+
+# Mac
 .DS_Store
