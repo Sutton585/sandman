@@ -216,11 +216,13 @@ docs/*/
 # Ignore all subdirectories in modules/ (the code)
 modules/*/
 modules/*
+modules/
 
 # Re-include only the .md files inside those subdirectories
 # !modules/*/*.md
 
 # Ensure the blueprint and registry in the modules/ root are tracked
+
 !modules/*.md
 !modules/*.json
 
