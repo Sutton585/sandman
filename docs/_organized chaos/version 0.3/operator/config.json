@@ -1,8 +1,0 @@
-{
-  "llm_provider": "gemini/gemini-2.5-flash",
-  "temperature": 0.2,
-  "inbox_dir": "inbox",
-  "evaluations_dir": "evaluations",
-  "profile_path": "../profile.md",
-  "prompt_template_path": "prompts/evaluation_prompt.md"
-}
