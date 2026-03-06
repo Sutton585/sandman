@@ -211,6 +211,7 @@ __marimo__/
 
 
 docs/*
+docs/*/
 
 # Ignore all subdirectories in modules/ (the code)
 modules/*/
