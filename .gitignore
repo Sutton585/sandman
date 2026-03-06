@@ -207,11 +207,17 @@ marimo/_lsp/
 __marimo__/
 
 
+
+
+
+docs/*
+
 # Ignore all subdirectories in modules/ (the code)
 modules/*/
+modules/*
 
 # Re-include only the .md files inside those subdirectories
-!modules/*/*.md
+# !modules/*/*.md
 
 # Ensure the blueprint and registry in the modules/ root are tracked
 !modules/*.md
