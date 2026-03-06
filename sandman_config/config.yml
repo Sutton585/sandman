@@ -1,0 +1,13 @@
+# Global settings
+debug: true
+data_dir: "../../workspace" # Or absolute path to workspace
+
+gmail_scraper:
+  credentials_path: "../../sandman_config/auth/credentials.json"
+  token_path: "../../sandman_config/auth/token.json"
+  automations:
+    - name: "job_alerts_linkedIn"
+      email_address: "suttoncx@gmail.com"
+      label: "Job Alerts/LinkedIn"
+      lookback_hours: 48
+      output_dir: "../../workspace/feeds/gmail_scraper/job_alerts"
