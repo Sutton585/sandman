@@ -1,4 +1,6 @@
 {
-   "reddit": "https://github.com/yourname/digestitor.git",
-   "gmail": "https://github.com/yourname/sandman-gmail.git"
+   "reddit": "https://github.com/Sutton585/digestitor.git",
+   "jobs": "https://github.com/Sutton585/job2markdown.git",
+   "web": "https://github.com/Sutton585/web2markdown.git",
+   "gmail": "https://github.com/Sutton585/gmail2markdown.git"
 }

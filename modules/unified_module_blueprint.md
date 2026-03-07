@@ -160,6 +160,9 @@ To avoid duplication, every module must translate its raw platform data into a s
 
 To maintain consistency and avoid context rot, every module follows a standardized documentation pattern. The root repository of Sandman holds the global standards, while individual modules only document their specific deviations and implementations.
 
+### Every Module README MUST Include:
+- **Key Dependencies:** A list of all libraries and resources used, explaining *how* they are used (e.g., "imaplib for Gmail connection") and *why* they were chosen (e.g., "to maintain zero-dependency reliability"). This ensures that any developer (or AI) can quickly grasp the technical stack and its rationale.
+
 ### The Universal Blueprint (This Document)
 This document (`unified_module_blueprint.md`) lives ONLY at the root of the Sandman project (`modules/unified_module_blueprint.md`). It dictates the architectural rules, class structure (The 5 Buckets), schema baselines, and core philosophies shared across all modules. To prevent duplication, this file is NEVER copied into individual module repositories.
 
@@ -184,7 +187,15 @@ Example (Gmail Scraper Architecture):
 
 Once the architecture document is reviewed and agreed upon, it serves as the complete, unambiguous specification needed to build the module.
 
-## 13. Deployment & Environment Standards
+## 13. Repository & Module Management
+
+Sandman follows a **Monolithic Orchestrator, Distributed Modules** architecture to ensure maximum modularity and independent development cycles.
+
+- **The Sandman Repository:** The root repository acts as the master orchestrator. Its `.gitignore` is configured to ignore everything in the `modules/` directory, **except** for `.md` documentation and `.json` files. This prevents module code from being committed directly to the Sandman repo, ensuring they remain independent entities.
+- **Module Repositories:** Each module is its own independent GitHub repository.
+- **Module Registry:** The `modules/module_registry.json` file in the Sandman root acts as the central directory. it contains the GitHub URLs for every module, allowing the orchestrator (or a developer) to programmatically `git clone` or `git pull` updates for the entire suite.
+
+## 14. Deployment & Environment Standards
 
 To manage dependencies cleanly and ensure smooth server deployment, the Sandman suite follows a "Monolithic Orchestrator, Distributed Modules" architecture.
 
