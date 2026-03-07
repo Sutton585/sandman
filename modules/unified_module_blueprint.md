@@ -8,7 +8,17 @@ This document lives in the root `modules/` directory of the Sandman orchestratio
 
 Modules are not simple data dumpers; they are Knowledge Accumulators designed for professional note-taking environments like Obsidian and AI-automated workflows. We prioritize high-signal output by refining messy raw data into optimized formats.
 
-- Markdown is the Ultimate Authority: The file system is the primary source of truth. If a user manually edits a note's front-matter (e.g., changing its categorization or deleting a scheduled re-scrape time), the scraper MUST detect and respect that change on its next run. Notes are structured for maximum clarity and RAG (Retrieval-Augmented Generation) compatibility.
+- **Three-Tiered Architecture (The Pipeline):** To avoid "monolithic bloat," modules are categorized by their role in the knowledge pipeline:
+    - **Tier 1: Source Scrapers (e.g., `reddit2markdown`, `gmail2markdown`):** These monitor high-level origins. Their job is to extract raw content and, crucially, identify external URLs for secondary processing.
+    - **Tier 2: Entity Extractors (e.g., `job2markdown`):** Specialized modules that take a URL or specific entity ID and transform it into a high-fidelity record using domain-specific tools (like **JobSpy** for job boards).
+    - **Tier 3: Utility Scrapers (e.g., `web2markdown`):** The "Universal Fallback." These use advanced noise-removal libraries (like **Trafilatura** or **Crawl4AI**) to turn any generic HTML page into clean Markdown.
+
+- **Cross-Module Handoff Schema:** Modules communicate through the filesystem.
+    - **Extraction:** A Tier 1 module extracts URLs and stores them in the `extracted_links` front-matter field of its generated Markdown file.
+    - **Queueing:** It also sets a `[entity]_scraped: false` (e.g., `jobs_scraped: false`) flag.
+    - **Processing:** The corresponding Tier 2 module scans the output directory for files with this flag set to `false`, processes the links, and then updates the flag to `true` (or the count of items found).
+
+- **Markdown is the Ultimate Authority:** The file system is the primary source of truth. If a user manually edits a note's front-matter (e.g., changing its categorization or deleting a scheduled re-scrape time), the scraper MUST detect and respect that change on its next run. Notes are structured for maximum clarity and RAG (Retrieval-Augmented Generation) compatibility.
 - Sanitized JSON for Programs: Programs and LLMs receive a noise-free JSON data structure, optimized for token efficiency and programmatic analysis, distinct from the raw API response.
 - Cumulative Knowledge (Living Notes): Scrapers do not blindly overwrite files and history. When an entity is re-scraped (due to an update or reaching maturity), the system updates the metadata but appends the new content (e.g., new comments, replies) to the end of the file. This creates a chronological record of an evolving discussion.
 - Safe Vault Coexistence: Modules must assume they are writing into a densely populated, human-curated directory. A scraper must surgically identify its owned files by checking for a specific ID in the front-matter (e.g., post_id). It must never touch or alter unrelated files.

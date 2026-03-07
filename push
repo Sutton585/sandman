@@ -1,0 +1,41 @@
+#!/bin/bash
+# push_modules.sh - Automated Git push for all Sandman modules and root
+
+ORIGINAL_DIR=$(pwd)
+
+echo "🚀 Pushing all Sandman updates to remote..."
+
+# Iterate through each module
+for dir in modules/*/ ; do
+    dir_clean=${dir%/}
+    
+    # Check if it's a directory and contains a .git folder
+    if [ -d "$dir_clean" ] && [ -d "$dir_clean/.git" ]; then
+        echo "--------------------------------------------------"
+        echo "⬆️  Pushing Module: $dir_clean"
+        cd "$dir_clean"
+        
+        # Check if there are commits to push
+        if [ -n "$(git log @{u}.. 2>/dev/null)" ]; then
+            git push
+            echo "✅ Module pushed successfully."
+        else
+            echo "⏭️  Nothing to push for this module."
+        fi
+        
+        cd "$ORIGINAL_DIR"
+    fi
+done
+
+echo "--------------------------------------------------"
+echo "⬆️  Pushing Sandman Root..."
+
+if [ -n "$(git log @{u}.. 2>/dev/null)" ]; then
+    git push
+    echo "✅ Root pushed successfully."
+else
+    echo "⏭️  Nothing to push for root."
+fi
+
+echo "--------------------------------------------------"
+echo "✨ All push operations complete."

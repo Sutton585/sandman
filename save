@@ -1,0 +1,46 @@
+#!/bin/bash
+# sync_modules.sh - Automated Git add & commit for Sandman modules
+
+# Usage: ./sync_modules.sh "Commit Message"
+
+COMMIT_MESSAGE=${1:-"Standard Sandman Module Update"}
+ORIGINAL_DIR=$(pwd)
+
+echo "🚀 Starting Sandman Module Stage & Commit..."
+
+# Iterate through each module
+for dir in modules/*/ ; do
+    dir_clean=${dir%/}
+    
+    # Check if it's a directory and contains a .git folder
+    if [ -d "$dir_clean" ] && [ -d "$dir_clean/.git" ]; then
+        echo "--------------------------------------------------"
+        echo "📂 Processing Module: $dir_clean"
+        cd "$dir_clean"
+        
+        git add .
+        # Check if there are changes before committing
+        if ! git diff-index --quiet HEAD --; then
+            git commit -m "$COMMIT_MESSAGE"
+            echo "✅ Module committed locally."
+        else
+            echo "⏭️  No changes detected. Skipping."
+        fi
+        
+        cd "$ORIGINAL_DIR"
+    fi
+done
+
+echo "--------------------------------------------------"
+echo "📂 Processing Sandman Root..."
+
+git add .
+if ! git diff-index --quiet HEAD --; then
+    git commit -m "$COMMIT_MESSAGE"
+    echo "✅ Root committed locally."
+else
+    echo "⏭️  No changes detected in root. Skipping."
+fi
+
+echo "--------------------------------------------------"
+echo "✨ All local commits complete. Run './push' when ready to go live."
