@@ -228,4 +228,4 @@ modules/
 
 # Ignore all sensitive data and workspaces
 auth/*
-workspace/*
+workspace/*SANDMAN_LEARNING.md

@@ -1,13 +1,31 @@
-# Global settings
-debug: true
-data_dir: "../../workspace" # Or absolute path to workspace
+# sandman_config/config.yml
 
-gmail_scraper:
-  credentials_path: "../../sandman_config/auth/credentials.json"
-  token_path: "../../sandman_config/auth/token.json"
-  automations:
-    - name: "job_alerts_linkedIn"
-      email_address: "suttoncx@gmail.com"
-      label: "Job Alerts/LinkedIn"
-      lookback_hours: 48
-      output_dir: "../../workspace/feeds/gmail_scraper/job_alerts"
+# Global settings for the entire Sandman Orchestrator
+global_defaults:
+  md_output_directory: "workspace/feeds"
+  json_output_directory: "workspace/archive"
+  data_directory: "sandman_config/data"
+  debug: false
+  update_log: true
+
+# The Job Queue: Executed in order by the Nightly Worker
+jobs:
+  - name: "MarvelStudiosSpoilers Reddit Search"
+    module: "reddit"
+    subreddit: "MarvelStudiosSpoilers"
+    limit: 3
+    detail: "MD"
+    min_post_age_hours: 12
+    min_score: 20
+    sort: "top"
+    generate_folders: true
+    
+  - name: "Software Engineer Remote Search"
+    module: "jobs"
+    search_term: "software engineer"
+    location: "Remote"
+    salary_min: 120000
+    is_remote: true
+    max_results: 20
+    sources: ["indeed", "zip_recruiter", "google"]
+
