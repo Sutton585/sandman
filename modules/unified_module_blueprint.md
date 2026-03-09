@@ -26,40 +26,42 @@ Modules are not simple data dumpers; they are Knowledge Accumulators designed fo
 
 ## 2. The Agnostic Interaction Model
 
-Every module supports 100% functional parity across three distinct modes of interaction. This ensures the tool fits perfectly into any workflow, from simple cron jobs to complex autonomous research pipelines. If a setting exists, it must be accessible everywhere.
+Every module supports 100% functional parity across three distinct modes of interaction. This ensures the tool fits perfectly into any workflow, from simple cron schedules to complex autonomous research pipelines. If a setting exists, it must be accessible everywhere.
 
-### A. The Configuration File (config.json)
+### A. The Configuration File (`config.yml`)
+**YAML Configuration Standard:** All Sandman modules MUST use YAML (`config.yml`) for their configuration files. While JSON was considered for strict standard-library portability, YAML is the officially supported standard because it allows for inline comments (`#`), which is critical for user-facing configuration files where complex parameters need explanation.
+
 Used for persistent, automated, daily-driver setups. It must contain:
 - global_defaults: Baseline settings applied to all executions.
-- jobs: A sequence of specific scrape tasks. 
+- routine: A sequence of specific scrape tasks. 
 
 ### B. The Command Line Interface (CLI)
-Used for ad-hoc exploration, testing, and terminal-based automation (like cron-jobs).
-- Must support targeting a specific origin entity (e.g., --target news) for one-off scrape jobs of entities not in the config.
+Used for ad-hoc exploration, testing, and terminal-based automation (like cron schedules).
+- Must support targeting a specific origin entity (e.g., --target news) for one-off scrape tasks of entities not in the config.
 - Must support explicit, typed overrides for every single parameter (e.g., --max-results 5, --detail XL, --save-json False).
     
 ### C. The Python Resource (Importable Module)
 Used for higher-level orchestration (e.g., an LLM agent triggering a scrape or seamless integration into larger suites).
-- The main orchestrator class must accept an overrides dictionary in its run() method to bypass any global or job-specific defaults programmatically.
+- The main orchestrator class must accept an overrides dictionary in its run() method to bypass any global or task-specific defaults programmatically.
 
-Precedence Order: Direct Overrides (CLI/Python) > Job-Specific Config > Global Defaults Config.
+Precedence Order: Direct Overrides (CLI/Python) > Task-Specific Config > Global Defaults Config.
 
 ## 3. Internal Class Architecture (The 5 Buckets)
 
 To ensure consistency in AI-driven development and code maintainability, every module must separate its internal logic into five distinct domains or "buckets" (usually structured within a `core/` directory).
 
-1. Config (Settings Management): Handles the logic for merging `global_defaults` with job-specific settings and applying CLI/Python overrides based on the Precedence Order. Validates parameter types.
+1. Config (Settings Management): Handles the logic for merging `global_defaults` with task-specific settings and applying CLI/Python overrides based on the Precedence Order. Validates parameter types.
 2. Client (Network Operations): Strictly isolates API and network logic. Manages authentication, headers (e.g., browser-mimicking), rate limiting, and pagination. It should return raw or semi-raw data.
 3. Processor (Data Sanitization & Translation): The pure data translation layer. It takes the messy API response from the Client and strictly maps it to the "Standard Schema". It also handles the logic for internal Obsidian link resolution.
 4. DatabaseManager (State Tracking): Manages the SQLite index. Responsible for cache pruning, maintaining the `rescrape_after` maturity logic, and executing the State Reconciliation Flow on startup.
-5. Scraper / Orchestrator (The Execution Loop): The main entry point. Iterates through the Job Queue, coordinates the Config, Client, Processor, and DatabaseManager, and ultimately writes the final Markdown and JSON files to the disk using a Theme Engine / Templates.
+5. Scraper / Orchestrator (The Execution Loop): The main entry point. Iterates through the routine queue, coordinates the Config, Client, Processor, and DatabaseManager, and ultimately writes the final Markdown and JSON files to the disk using a Theme Engine / Templates.
 
-## 4. The Execution Architecture: The Job Model
+## 4. The Execution Architecture: The Routine Model
 
-Modules must not use a simple lookup model (e.g., find the config for X and run it once). Instead, they operate on a Job Queue.
+Modules must not use a simple lookup model (e.g., find the config for X and run it once). Instead, they operate on a Routine.
 
-- Sequential Execution: The config.json defines an array of jobs. The module iterates through this list and executes them in order.
-- Multi-Faceted Targeting: A user must be able to define multiple jobs for the exact same origin entity, each with different settings.
+- Sequential Execution: The config.yml defines an array of tasks in the routine section of the config. The module iterates through this list and executes them in order.
+- Multi-Faceted Targeting: A user must be able to define multiple tasks for the exact same origin entity, each with different settings.
 
 ## 5. Behavioral Toggles & Limits
 
@@ -225,7 +227,7 @@ To create a new module (e.g: scraper for Gmail, Twitter, etc...) that's consiste
 7. Create a `templates/` folder inside the module with `note.template` and `comment.template`.
 8. Implement the Client and Processor.
 9. Wire the logic together with the Orchestrator.
-10. Add a test job to the master `config.json` and verify the State Reconciliation Flow.
+10. Add a test task to the master `config.yml` and verify the State Reconciliation Flow.
 
 ## Sandman Universal Nomenclature Reference
 
@@ -233,7 +235,7 @@ This reference outlines the unified naming conventions used across the Sandman e
 
 ### Context Interfaces
 
-*   **Config File**: The keys used in `config.json` (or `config.yml`) to define module behavior and default jobs.
+*   **Config File**: The keys used in `config.yml` to define module behavior and default routine.
 *   **CLI Flag**: The command-line arguments used to execute a module directly from the terminal.
 *   **Python**: The argument variables or dictionary keys used when running a module as an imported Python class.
 *   **Markdown Frontmatter**: The structured metadata block at the top of generated `.md` files.
