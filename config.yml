@@ -1,0 +1,43 @@
+# sandman_config/config.yml
+
+# Global settings for the entire Sandman Orchestrator
+global_defaults:
+  debug: false
+  md_output_directory: "workspace/feeds/reddit"
+  json_output_directory: "workspace/data/log_reddit.md"
+  data_directory: "sandman_config/data"
+  group_by_source: true
+  min_age_hours: 12
+  max_results: 8
+  md_log: true
+# The Job Queue: Executed in order by the Nightly Worker
+jobs:
+  - name: "Daily MarvelStudiosSpoilers Updates"
+    module: "reddit"
+    source: "MarvelStudiosSpoilers"
+    limit: 3
+    detail: "MD"
+    min_score: 10
+    sort: "new"
+    group_by_source: true
+
+  - name: "Daily Comic-related LeaksUpdates"
+    module: "reddit"
+    source: "LeaksAndRumors"
+    limit: 3
+    detail: "MD"
+    label: "comics"
+    min_score: 10
+    sort: "new"
+    group_by_source: true
+    
+  - name: "UX Ops Remote Search"
+    module: "jobs"
+    source: "indeed"
+    query: "software engineer"
+    location: "Remote"
+    salary_min: 120000
+    is_remote: true
+    max_results: 20
+    sources: ["indeed", "zip_recruiter", "google"]
+

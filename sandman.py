@@ -29,7 +29,7 @@ def run_job(job_config, global_defaults):
             from reddit2md.reddit2md import RedditScraper
             scraper = RedditScraper()
             # RedditScraper's run() method handles the dictionary of overrides
-            scraper.run(source=settings.get("subreddit"), overrides=settings)
+            scraper.run(source=settings.get("source"), overrides=settings)
         except ImportError:
             print("[!] Error: Could not import reddit2md. Ensure it's in the modules folder.")
         except Exception as e:
@@ -50,7 +50,7 @@ def run_job(job_config, global_defaults):
 
 def main():
     parser = argparse.ArgumentParser(description="Sandman Master Orchestrator")
-    parser.add_argument("--config", default="sandman_config/config.yml", help="Path to master config")
+    parser.add_argument("--config", default="config.yml", help="Path to master config")
     parser.add_argument("--debug", type=bool, help="Global debug override")
     
     args = parser.parse_args()
