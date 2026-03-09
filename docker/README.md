@@ -8,7 +8,7 @@ The Sandman orchestrator is designed to run as a **Nightly Worker**. It lives in
 ## 2. Container Components
 - **n8n:** The primary workflow engine, running as a service inside the container.
 - **Python Runtime:** Pre-configured with all module dependencies.
-- **Playwright/Chromium:** Bundled for `JobSpy` and `web2markdown` (Crawl4AI) support.
+- **Playwright/Chromium:** Bundled for `JobSpy` and `web2md` (Crawl4AI) support.
 
 ## 3. Sandboxing & Virtual Environments
 To maintain strict modularity, each module within the `/modules` directory is managed via its own `requirements.txt`.

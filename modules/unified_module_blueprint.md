@@ -1,6 +1,6 @@
 # Module Standards: Unified Architectural Blueprint
 
-This document defines the strict architectural and philosophical standards for the Sandman suite of scrapers (originally based on the Digestitor project). Whether building a module for Reddit, HackerNews, Twitter, Gmail, or any other platform, every scraper module must adhere to this blueprint.
+This document defines the strict architectural and philosophical standards for the Sandman suite of scrapers (originally based on the reddit2md project). Whether building a module for Reddit, HackerNews, Twitter, Gmail, or any other platform, every scraper module must adhere to this blueprint.
 
 This document lives in the root `modules/` directory of the Sandman orchestration suite. It ensures that the overarching orchestration layer can interact with any module predictably, and that the end-user experiences a unified, highly controllable knowledge-gathering pipeline. 
 
@@ -9,9 +9,9 @@ This document lives in the root `modules/` directory of the Sandman orchestratio
 Modules are not simple data dumpers; they are Knowledge Accumulators designed for professional note-taking environments like Obsidian and AI-automated workflows. We prioritize high-signal output by refining messy raw data into optimized formats.
 
 - **Three-Tiered Architecture (The Pipeline):** To avoid "monolithic bloat," modules are categorized by their role in the knowledge pipeline:
-    - **Tier 1: Source Scrapers (e.g., `reddit2markdown`, `gmail2markdown`):** These monitor high-level origins. Their job is to extract raw content and, crucially, identify external URLs for secondary processing.
-    - **Tier 2: Entity Extractors (e.g., `job2markdown`):** Specialized modules that take a URL or specific entity ID and transform it into a high-fidelity record using domain-specific tools (like **JobSpy** for job boards).
-    - **Tier 3: Utility Scrapers (e.g., `web2markdown`):** The "Universal Fallback." These use advanced noise-removal libraries (like **Trafilatura** or **Crawl4AI**) to turn any generic HTML page into clean Markdown.
+    - **Tier 1: Source Scrapers (e.g., `reddit2md`, `gmail2md`):** These monitor high-level origins. Their job is to extract raw content and, crucially, identify external URLs for secondary processing.
+    - **Tier 2: Entity Extractors (e.g., `job2md`):** Specialized modules that take a URL or specific entity ID and transform it into a high-fidelity record using domain-specific tools (like **JobSpy** for job boards).
+    - **Tier 3: Utility Scrapers (e.g., `web2md`):** The "Universal Fallback." These use advanced noise-removal libraries (like **Trafilatura** or **Crawl4AI**) to turn any generic HTML page into clean Markdown.
 
 - **Cross-Module Handoff Schema:** Modules communicate through the filesystem.
     - **Extraction:** A Tier 1 module extracts URLs and stores them in the `extracted_links` front-matter field of its generated Markdown file.
@@ -36,7 +36,7 @@ Used for persistent, automated, daily-driver setups. It must contain:
 ### B. The Command Line Interface (CLI)
 Used for ad-hoc exploration, testing, and terminal-based automation (like cron-jobs).
 - Must support targeting a specific origin entity (e.g., --target news) for one-off scrape jobs of entities not in the config.
-- Must support explicit, typed overrides for every single parameter (e.g., --limit 5, --detail XL, --save-json False).
+- Must support explicit, typed overrides for every single parameter (e.g., --max-results 5, --detail XL, --save-json False).
     
 ### C. The Python Resource (Importable Module)
 Used for higher-level orchestration (e.g., an LLM agent triggering a scrape or seamless integration into larger suites).
@@ -65,9 +65,9 @@ Modules must not use a simple lookup model (e.g., find the config for X and run 
 
 Scrapers must allow users to suppress side effects or limit footprints:
 - save_json (Boolean): Whether to persist the sanitized JSON data after processing.
-- update_log (Boolean): Whether to append the run results to the human-readable Markdown log.
-- max_db_records (Integer): Maximum number of records to keep in the SQLite index. Older records are pruned to keep the database size manageable.
-- min_post_age_hours (Integer): Setting this to 0 must disable all maturity/re-scraping logic, making every scrape final. 
+- md_log (Boolean): Whether to append the run results to the human-readable Markdown log.
+- db_limit (Integer): Maximum number of records to keep in the SQLite index. Older records are pruned to keep the database size manageable.
+- min_age_hours (Integer): Setting this to 0 must disable all maturity/re-scraping logic, making every scrape final. 
 
 ## 6. State Reconciliation Flow
 
@@ -91,7 +91,7 @@ Data flows through three distinct layers, each serving a specific architectural 
 - Path: data_directory/database.db
 - Purpose: A high-speed tracking index. It remembers what has been scraped, when it was scraped, and when it is scheduled to be re-scraped. This index is considered a cache and should be rebuildable from the Markdown files.
 - Function: It is strictly treated as a Self-Healing Cache. It must never be the ultimate source of truth.
-- Pruning: The database footprint is managed by a max_db_records integer setting.
+- Pruning: The database footprint is managed by a db_limit integer setting.
 
 ### Layer 3: Markdown Notes (The Final Product)
 - Path: output_directory/
@@ -104,7 +104,7 @@ Data flows through three distinct layers, each serving a specific architectural 
 To balance the need for immediate updates with the desire for deep context, modules must implement Maturity Logic.
 1. Fresh Scrape: A new post is scraped immediately but marked with a future rescrape_after timestamp in the DB and the Markdown front-matter.
 2. Maturation: Once that time passes, the module re-fetches the thread, updates the metadata (e.g., new score/metrics), and appends the finalized conversation to the file.
-3. Disablement: Setting min_post_age_hours to 0 must disable this entirely, making every scrape final.
+3. Disablement: Setting min_age_hours to 0 must disable this entirely, making every scrape final.
 
 ### Automatic Internal Linking (The Graph)
 Where applicable, scrapers should convert external URLs pointing to the origin platform into internal Markdown links (e.g., [[Origin_ID]]). This allows the generated files to form a cohesive, interconnected graph within tools like Obsidian.
@@ -114,8 +114,8 @@ Where applicable, scrapers should convert external URLs pointing to the origin p
 Consistency across modules is mandatory. Front-matter fields and database columns must use standardized naming for the baseline schema (Module specifics can extend this):
 
 - post_id: The unique, immutable identifier from the source platform.
-- metadata_label: (e.g., project or flair). Used to categorize the post based on source metadata.
-- post_link: (Formerly story_link). Used to link to related internal notes or external URLs.
+- metadata_label: (e.g., project or label). Used to categorize the post based on source metadata.
+- post_links: (Formerly story_link). Used to link to related internal notes or external URLs.
 - rescrape_after: The ISO timestamp dictating when the Living Note should be updated.
 
 ## 10. Path Configuration, File Rules & Debug Isolation
@@ -131,7 +131,7 @@ Filenames must be completely decoupled from volatile metadata (like categories o
 - Standard: `[OriginEntity]_[post_id].md` (e.g., `reddit_1rm32fu.md`).
 
 ### Automated Folder Organization
-Modules must support a generate_folders (e.g., generate_subreddit_folders) boolean toggle.
+Modules must support a generate_folders (e.g., group_by_source) boolean toggle.
 - True: Files are sorted into subdirectories based on their origin (e.g., output_directory/OriginEntity/File.md).
 - False: All files are placed directly in the root of the output_directory.
 
@@ -226,3 +226,76 @@ To create a new module (e.g: scraper for Gmail, Twitter, etc...) that's consiste
 8. Implement the Client and Processor.
 9. Wire the logic together with the Orchestrator.
 10. Add a test job to the master `config.json` and verify the State Reconciliation Flow.
+
+## Sandman Universal Nomenclature Reference
+
+This reference outlines the unified naming conventions used across the Sandman ecosystem. The names are consistent across all module interfaces, but their context changes depending on where they are used.
+
+### Context Interfaces
+
+*   **Config File**: The keys used in `config.json` (or `config.yml`) to define module behavior and default jobs.
+*   **CLI Flag**: The command-line arguments used to execute a module directly from the terminal.
+*   **Python**: The argument variables or dictionary keys used when running a module as an imported Python class.
+*   **Markdown Frontmatter**: The structured metadata block at the top of generated `.md` files.
+*   **JSON Data**: The properties within the generated raw `.json` output files.
+
+---
+
+### 1. Sourcing & Identification
+
+These variables define **where** data is coming from and **what** it is called.
+
+| Name | Interface Usage | Description |
+| :--- | :--- | :--- |
+| **`source`** | Config / CLI (`--source`) / Python | The platform or sub-community being targeted. Optionally used for subfolders. (e.g., subreddits in the reddit2md module, websites in a web scraper, etc...). |
+| | Frontmatter / JSON | Identifies the origin of the scraped post. |
+| **`post_id`** | Frontmatter / JSON | A unique identifier derived from the source platform's own ID system. |
+| **`post_URL`** | Frontmatter / JSON | The direct web link to the original content on the source platform. |
+| **`poster`** | Frontmatter / JSON | The author, OP, or entity that created the post being scraped (e.g., 'employer_name' when scraping indeed job listsings, 'OP' when scraping reddit posts, 'Authur' of articles, etc...). |
+| **`module`** | Frontmatter / JSON | The Sandman module that generated the file (e.g., 'reddit2md'). Identifies the file as scraped/generated output, and the module that created it. |
+
+---
+
+### 2. Search & Filtering
+
+These variables define **how** to query the source and **what** to ignore.
+
+| Name | Interface Usage | Description |
+| :--- | :--- | :--- |
+| **`query`** | Config / CLI (`--query`) / Python | The main search term (used predominantly in job or web scrapers). |
+| **`min_score`** | Config / CLI (`--min-score`) / Python | The minimum score or upvotes required to process a post. |
+| **`blacklist_terms`** | Config / CLI (`--blacklist-terms`) / Python | List of keywords. If found in the title/body, the post is skipped. |
+| **`blacklist_urls`** | Config / CLI (`--blacklist-urls`) / Python | List of domain fragments to ignore when capturing links. |
+| **`min_age_hours`** | Config / CLI (`--min-age-hours`) / Python | Minimum time a post must exist before it is considered mature. |
+| **`max_age_hours`** | Config / CLI (`--max-age-hours`) / Python | Maximum age for a post to be considered fresh/relevant. |
+
+---
+
+### 3. Limits & Data Management
+
+These variables dictate the **size** and **retention** of your data footprint.
+
+| Name | Interface Usage | Description |
+| :--- | :--- | :--- |
+| **`max_results`** | Config / CLI (`--max-results`) / Python | The maximum number of new items to fetch during a single run. |
+| **`db_limit`** | Config / CLI (`--db-limit`) / Python | Footprint control. The maximum number of records to keep in the SQLite cache. |
+| **`save_json`** | Config / CLI (`--save-json`) / Python | Boolean. Whether to save a sanitized `.json` copy alongside the markdown. |
+| **`md_log`** | Config / CLI (`--md-log`) / Python | Boolean. Whether to append run results to the human-readable Scrape Log. |
+
+---
+
+### 4. Categorization & Output Formatting
+
+These variables define how the data is **presented** and **organized** locally.
+
+| Name | Interface Usage | Description |
+| :--- | :--- | :--- |
+| **`label`** | Config / CLI (`--label`) / Python | Custom user-defined categorization override (formerly 'flair'). |
+| | Frontmatter / JSON | Classifications provided by the source or overridden by the user. |
+| **`group_by_source`** | Config / CLI (`--group-by-source`) / Python | Boolean. Whether to create sub-folders for each source (e.g., `/reddit/news/`). |
+| **`detail`** | Config / CLI (`--detail`) / Python | Controls output depth (e.g., capturing XS vs XL comment trees). |
+| **`sort`** | Config / CLI (`--sort`) / Python | The sorting method applied to the source feed (e.g., 'new', 'top'). |
+| **`post_links`** | Frontmatter / JSON | A list of all external URLs found within the content. |
+| **`date_posted`** | Frontmatter / JSON | The original publication timestamp of the post. |
+| **`date_scraped`**| Frontmatter / JSON | The timestamp of when Sandman extracted the data. |
+

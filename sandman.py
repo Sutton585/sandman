@@ -26,22 +26,22 @@ def run_job(job_config, global_defaults):
     # Dispatch to the correct module
     if module_name == "reddit":
         try:
-            from digestitor.digestitor import RedditScraper
+            from reddit2md.reddit2md import RedditScraper
             scraper = RedditScraper()
             # RedditScraper's run() method handles the dictionary of overrides
-            scraper.run(subreddit_name=settings.get("subreddit"), overrides=settings)
+            scraper.run(source=settings.get("subreddit"), overrides=settings)
         except ImportError:
-            print("[!] Error: Could not import Digestitor. Ensure it's in the modules folder.")
+            print("[!] Error: Could not import reddit2md. Ensure it's in the modules folder.")
         except Exception as e:
             print(f"[!] Error in Reddit job: {e}")
 
     elif module_name == "jobs":
         try:
-            from job2markdown.job2markdown import JobScraper
+            from job2md.job2md import JobScraper
             scraper = JobScraper(overrides=settings)
             scraper.run()
         except ImportError:
-            print("[!] Error: Could not import Job2Markdown. Ensure it's in the modules folder.")
+            print("[!] Error: Could not import job2md. Ensure it's in the modules folder.")
         except Exception as e:
             print(f"[!] Error in Jobs job: {e}")
 

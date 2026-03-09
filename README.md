@@ -15,16 +15,16 @@ To ensure scalability and maintainability, Sandman is organized into three disti
 
 ### Tier 1: Source Scrapers
 These monitor your primary entry points and capture raw content.
-- `reddit2markdown` (Digestitor): Scrapes subreddits and tracks thread maturity.
-- `gmail2markdown`: Monitors Gmail labels (e.g., Job Alerts, Newsletters) and extracts embedded URLs.
+- `reddit2md` (reddit2md): Scrapes subreddits (sources) and tracks thread maturity.
+- `gmail2md`: Monitors Gmail labels (e.g., Job Alerts, Newsletters) and extracts embedded URLs.
 
 ### Tier 2: Entity Extractors
 These are "domain experts" that take a specific URL and turn it into a high-fidelity record.
-- `job2markdown`: Uses **JobSpy** to turn LinkedIn/Indeed URLs into structured Job Notes (Salary, Skills, Company).
+- `job2md`: Uses **JobSpy** to turn LinkedIn/Indeed URLs into structured Job Notes (Salary, Skills, Company).
 
 ### Tier 3: Utility Scrapers
 The "Universal Fallback" for generic web content.
-- `web2markdown`: Uses **Trafilatura** to de-clutter any generic article or blog post into clean Markdown.
+- `web2md`: Uses **Trafilatura** to de-clutter any generic article or blog post into clean Markdown.
 
 ## 3. Orchestration & Deployment: The "Nightly Worker"
 
@@ -50,7 +50,7 @@ To quickly understand the Sandman ecosystem and get up to speed on the current s
 
 1.  **Project Overview:** Start with this `README.md` to understand the high-level vision and the "Nightly Worker" deployment model.
 2.  **Global Standards:** Read the [Unified Module Blueprint](modules/unified_module_blueprint.md). This document defines the mandatory architectural rules (The "5 Buckets"), schema baselines, and cross-module communication protocols shared by all scrapers.
-3.  **Module Registry:** Review the `modules/` directory. Each subdirectory (e.g., `job2markdown`, `gmail2markdown`) is an independent GitHub repository with its own isolated virtual environment.
+3.  **Module Registry:** Review the `modules/` directory. Each subdirectory (e.g., `job2md`, `gmail2md`) is an independent GitHub repository with its own isolated virtual environment.
 4.  **Specific Module Context:** Once you've identified a module to work on, read its local `README.md` and its `architecture.md` file. These documents detail the platform-specific strategies, unique metadata fields, and implementation progress for that specific scraper.
 
 ## 5. Getting Started
@@ -58,7 +58,7 @@ To quickly understand the Sandman ecosystem and get up to speed on the current s
 1.  Clone the repository.
 2.  Review `sandman_config/config.yml` to set your global paths (`output_directory`, `data_directory`).
 3.  Configure your credentials in `sandman_config/auth/`.
-4.  Run a module: `python modules/digestitor/digestitor.py`.
+4.  Run a module: `python modules/reddit2md/reddit2md.py`.
 
 ## 6. Managing Multiple Repositories (Git Workflow)
 
@@ -77,5 +77,5 @@ chmod +x save push
 
 ### Typical Workflow
 1.  **Code:** Make changes across one or multiple modules.
-2.  **Save Locally:** `./save "implemented job filtering in job2markdown"`
+2.  **Save Locally:** `./save "implemented job filtering in job2md"`
 3.  **Go Live:** `./push` (when you're ready to share your changes).

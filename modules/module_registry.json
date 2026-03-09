@@ -1,6 +1,6 @@
 {
-   "reddit": "https://github.com/Sutton585/digestitor.git",
-   "jobs": "https://github.com/Sutton585/job2markdown.git",
-   "web": "https://github.com/Sutton585/web2markdown.git",
-   "gmail": "https://github.com/Sutton585/gmail2markdown.git"
+   "reddit": "https://github.com/Sutton585/reddit2md.git",
+   "jobs": "https://github.com/Sutton585/job2md.git",
+   "web": "https://github.com/Sutton585/web2md.git",
+   "gmail": "https://github.com/Sutton585/gmail2md.git"
 }
