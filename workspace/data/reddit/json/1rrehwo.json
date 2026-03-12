@@ -1,0 +1,31 @@
+{
+  "post_id": "1rrehwo",
+  "title": "I used asyncio and dataclasses to build a \"microkernel\" for LLM agents \u2014 here's what I learned",
+  "poster": "leland_fy",
+  "source": "Python",
+  "permalink": "/r/Python/comments/1rrehwo/i_used_asyncio_and_dataclasses_to_build_a/",
+  "selftext": "    I've been experimenting with LLM agents (the kind that call tools in a loop). Every framework I tried had the same problem: there's no layer between \"the LLM decided to do something\" and \"the side effect happened.\" So I tried building one \u2014 using only the Python standard library.\n    \n    The result is ~500 lines, single file, zero dependencies. A few things I found interesting along the way:\n    \n    **Checkpoint/replay without pickle**\n    \n    Python coroutines can't be serialized. You can't snapshot a half-finished `async def`. My workaround: log every async side effect (\"syscall\") and its response. To resume after a crash, re-run the function from the top and serve cached responses. The coroutine fast-forwards to where it left off without knowing it was ever interrupted.\n    \n    This ended up being the most useful pattern in the whole project \u2014 deterministic replay makes debugging trivial.\n    \n    **ContextVar as a dependency injection trick**\n    \n    I wanted agent code to have zero imports from the kernel. The solution: a `ContextVar` holds the current proxy. The kernel sets it before running the agent; helper functions like `call_tool()` read it implicitly.\n    \n    ```python\n    # agent code \u2014 no kernel imports\n    async def my_agent():\n        result = await call_tool(\"search\", query=\"hello\")\n        remaining = budget(\"api\")\n    ```\n    \n    It's the same pattern as Flask's `request` or Starlette's context. Works well with asyncio since ContextVar is task-scoped.\n    \n    **Pre-deduct, refund on failure**\n    \n    Budget enforcement has a subtle ordering problem. If you deduct after execution and the tool raises, the cost sticks but the result is never logged. On replay, the call re-executes and deducts again \u2014 permanent leak. Deducting before and refunding on failure avoids this.\n    \n    **Exception as a control flow mechanism**\n    \n    To \"suspend\" an agent (e.g., waiting for human approval on a destructive action), I raise a `SuspendInterrupt` that unwinds the entire call stack. It felt wrong at first \u2014 using exceptions for non-error control flow. But it's actually the cleanest way to halt a coroutine you can't serialize. Same idea as `StopIteration` in generators.\n    \n    The project is on GitHub (link in comments). Happy to discuss the implementation \u2014 especially if anyone has better patterns for async checkpoint/replay in Python.",
+  "score": 0,
+  "upvote_ratio": 0.2,
+  "num_comments": 1,
+  "domain": "self.Python",
+  "is_video": false,
+  "is_gallery": false,
+  "stickied": false,
+  "spoiler": false,
+  "over_18": false,
+  "author_flair": null,
+  "post_flair": "Discussion",
+  "subreddit_subscribers": 1458198,
+  "created_utc": 1773282296.0,
+  "scraped_utc": 1773282296.0,
+  "url_overridden_by_dest": null,
+  "comments": [
+    {
+      "poster": "wraithnix",
+      "score": 1,
+      "body": "The formatting on this is pretty messed up, and there's no \"link in comments\" to the repo.",
+      "replies": []
+    }
+  ]
+}

@@ -10,7 +10,7 @@ Modules are not simple data dumpers; they are Knowledge Accumulators designed fo
 
 - **Three-Tiered Architecture (The Pipeline):** To avoid "monolithic bloat," modules are categorized by their role in the knowledge pipeline:
     - **Tier 1: Source Scrapers (e.g., `reddit2md`, `gmail2md`):** These monitor high-level origins. Their job is to extract raw content and, crucially, identify external URLs for secondary processing.
-    - **Tier 2: Entity Extractors (e.g., `job2md`):** Specialized modules that take a URL or specific entity ID and transform it into a high-fidelity record using domain-specific tools (like **JobSpy** for job boards).
+    - **Tier 2: Entity Extractors (e.g., `jobs2md`):** Specialized modules that take a URL or specific entity ID and transform it into a high-fidelity record using domain-specific tools (like **JobSpy** for job boards).
     - **Tier 3: Utility Scrapers (e.g., `web2md`):** The "Universal Fallback." These use advanced noise-removal libraries (like **Trafilatura** or **Crawl4AI**) to turn any generic HTML page into clean Markdown.
 
 - **Cross-Module Handoff Schema:** Modules communicate through the filesystem.
@@ -26,17 +26,19 @@ Modules are not simple data dumpers; they are Knowledge Accumulators designed fo
 
 ## 2. The Agnostic Interaction Model
 
-Every module supports 100% functional parity across three distinct modes of interaction. This ensures the tool fits perfectly into any workflow, from simple cron schedules to complex autonomous research pipelines. If a setting exists, it must be accessible everywhere.
+Every module supports 100% functional parity across three distinct modes of interaction. This ensures the tool fits perfectly into any workflow, from simple recurring schedules to complex autonomous research pipelines. If a setting exists, it must be accessible everywhere.
 
 ### A. The Configuration File (`config.yml`)
 **YAML Configuration Standard:** All Sandman modules MUST use YAML (`config.yml`) for their configuration files. While JSON was considered for strict standard-library portability, YAML is the officially supported standard because it allows for inline comments (`#`), which is critical for user-facing configuration files where complex parameters need explanation.
 
-Used for persistent, automated, daily-driver setups. It must contain:
-- global_defaults: Baseline settings applied to all executions.
-- routine: A sequence of specific scrape tasks. 
+Used for persistent, automated, persistent setups. It must contain:
+-  Settings (`settings`): This section establishes the baseline parameters for any execution (such as output directories, default logging verbose level, and standard timeouts).
+-  Routine (`routine`): This section defines an ordered list of specific tasks to execute when the module is run without arguments. 
+
+The routine is a to-do list for calls to this script that don't have any specific parameters. You can have multiple entries in this queue targeting the exact same source with completely different parameters if you choose. It is the default automated routine, enabling the user to run the script without arguments on a recurring schedule and retrieve their customized source of data.
 
 ### B. The Command Line Interface (CLI)
-Used for ad-hoc exploration, testing, and terminal-based automation (like cron schedules).
+Used for ad-hoc exploration, testing, and terminal-based automation (like recurring schedules).
 - Must support targeting a specific origin entity (e.g., --target news) for one-off scrape tasks of entities not in the config.
 - Must support explicit, typed overrides for every single parameter (e.g., --max-results 5, --detail XL, --save-json False).
     
@@ -50,7 +52,7 @@ Precedence Order: Direct Overrides (CLI/Python) > Task-Specific Config > Global 
 
 To ensure consistency in AI-driven development and code maintainability, every module must separate its internal logic into five distinct domains or "buckets" (usually structured within a `core/` directory).
 
-1. Config (Settings Management): Handles the logic for merging `global_defaults` with task-specific settings and applying CLI/Python overrides based on the Precedence Order. Validates parameter types.
+1. Config (Settings Management): Handles the logic for merging `settings` with task-specific settings and applying CLI/Python overrides based on the Precedence Order. Validates parameter types.
 2. Client (Network Operations): Strictly isolates API and network logic. Manages authentication, headers (e.g., browser-mimicking), rate limiting, and pagination. It should return raw or semi-raw data.
 3. Processor (Data Sanitization & Translation): The pure data translation layer. It takes the messy API response from the Client and strictly maps it to the "Standard Schema". It also handles the logic for internal Obsidian link resolution.
 4. DatabaseManager (State Tracking): Manages the SQLite index. Responsible for cache pruning, maintaining the `rescrape_after` maturity logic, and executing the State Reconciliation Flow on startup.
@@ -66,16 +68,23 @@ Modules must not use a simple lookup model (e.g., find the config for X and run 
 ## 5. Behavioral Toggles & Limits
 
 Scrapers must allow users to suppress side effects or limit footprints:
+- verbose (Integer): Controls the level of terminal output across all modules and the orchestrator.
+    - 0: Errors only (Silent operation).
+    - 1: Basic progress and warnings (Recommended default).
+    - 2: Granular debug and trace information.
 - save_json (Boolean): Whether to persist the sanitized JSON data after processing.
 - md_log (Boolean): Whether to append the run results to the human-readable Markdown log.
 - db_limit (Integer): Maximum number of records to keep in the SQLite index. Older records are pruned to keep the database size manageable.
-- min_age_hours (Integer): Setting this to 0 must disable all maturity/re-scraping logic, making every scrape final. 
+- min_age_hours (Integer): The minimum age of a post to be considered relevant. Anything newer is entirely ignored.
+- max_age_hours (Integer): The maximum age of a post to be considered relevant. Anything older is entirely ignored. 
+- rescrape_threshold_hours (Integer): Triggers maturity logic (if supported by module). If a post is younger than this limit, it is scraped but queued for a rescrape later. Setting this to 0 disables maturity/re-scraping logic.
+- offset (Integer): Discards the first N results from the source feed before the scraper begins processing.
 
 ## 6. State Reconciliation Flow
 
 To maintain the Source of Truth, every module must perform a surgical reconciliation on startup (handled by the Orchestrator and DatabaseManager). This ensures the SQLite cache reflects the current state of the filesystem.
 
-1. Scan Directory: Recursively scan the output_directory for all .md files.
+1. Scan Directory: Recursively scan the md_output_directory for all .md files.
 2. Verify Ownership: For each file, parse the front-matter. If the post_id field is missing, skip the file entirely (it belongs to the user, not the scraper).
 3. Conflict Resolution: Compare the category and rescrape_after values in the Markdown file against the SQLite database. If they differ, the Markdown file wins, so update the database record immediately.
 4. Orphan Pruning: Check for records in the SQLite database where the corresponding Markdown file no longer exists on disk. Delete these records from the database (the user has forgotten the post).
@@ -85,18 +94,18 @@ To maintain the Source of Truth, every module must perform a surgical reconcilia
 Data flows through three distinct layers, each serving a specific architectural purpose.
 
 ### Layer 1: JSON Archive (The Backup)
-- Path: data_directory/json/
+- Path: data_output_directory/json/
 - Purpose: Stores the sanitized, high-signal JSON data (never the raw, messy API response).
 - Function: Serves as an offline backup. If the user accidentally deletes their Markdown notes or the SQLite database, the system can rebuild the entire vault from these JSON files without hitting the external API rate limits.
 
 ### Layer 2: SQLite Index (The Memory Cache)
-- Path: data_directory/database.db
+- Path: data_output_directory/database.db
 - Purpose: A high-speed tracking index. It remembers what has been scraped, when it was scraped, and when it is scheduled to be re-scraped. This index is considered a cache and should be rebuildable from the Markdown files.
 - Function: It is strictly treated as a Self-Healing Cache. It must never be the ultimate source of truth.
 - Pruning: The database footprint is managed by a db_limit integer setting.
 
 ### Layer 3: Markdown Notes (The Final Product)
-- Path: output_directory/
+- Path: md_output_directory/
 - Purpose: The human-readable and LLM-parsable final output.
 - Function: As detailed in the Core Philosophy, these are living documents that dictate state back to the SQLite cache during reconciliation.
 
@@ -124,8 +133,8 @@ Consistency across modules is mandatory. Front-matter fields and database column
 
 ### Configurable Paths
 Every module must expose the following path variables to the Agnostic Interaction Model (Config, CLI, Python overrides), allowing users or overarching orchestrators granular control over where data lives:
-- `output_directory`: Where the final Markdown notes are saved (e.g., a specific folder in an Obsidian vault).
-- `data_directory`: Where the SQLite cache and JSON archives are saved.
+- `md_output_directory`: Where the final Markdown notes are saved (e.g., a specific folder in an Obsidian vault).
+- `data_output_directory`: Where the SQLite cache and JSON archives are saved.
 - `auth_directory`: Where sensitive API keys, OAuth tokens, or credential files are stored (e.g., `sandman_config/auth/`).
 
 ### Filename Pattern
@@ -134,12 +143,12 @@ Filenames must be completely decoupled from volatile metadata (like categories o
 
 ### Automated Folder Organization
 Modules must support a generate_folders (e.g., group_by_source) boolean toggle.
-- True: Files are sorted into subdirectories based on their origin (e.g., output_directory/OriginEntity/File.md).
-- False: All files are placed directly in the root of the output_directory.
+- True: Files are sorted into subdirectories based on their origin (e.g., md_output_directory/OriginEntity/File.md).
+- False: All files are placed directly in the root of the md_output_directory.
 
 ### Debug Mode Isolation (CRITICAL)
 Each module includes a Debug Mode flag, acting as a hard safety override.
-- When True: The module MUST completely ignore all user-configured `output_directory` and `data_directory` settings. It strictly isolates and forces all operations into a local `./data/` folder relative to the script. This guarantees that a developer can test the scraper without accidentally writing files into a user's live production vault or polluting their research environment.
+- When True: The module MUST completely ignore all user-configured `md_output_directory` and `data_output_directory` settings. It strictly isolates and forces all operations into a local `./data/` folder relative to the script. This guarantees that a developer can test the scraper without accidentally writing files into a user's live production vault or polluting their research environment.
 - Auth Directory Exception: Debug mode MUST NOT override the user's configured `auth_directory`. A developer testing the module must still be able to authenticate using their existing credentials without having to duplicate sensitive keys into the local debug folder.
 - Predictable Output & Gitignore: Because debug mode forces output locally, the resulting directories are always consistently named (e.g., a local `/data` folder containing `/data/json`, `/data/database.db`, and a local markdown output folder). Because this structure is predictable, these paths must be universally included in every module's `.gitignore` file to ensure test data is never accidentally committed to the repository.
 
@@ -212,7 +221,7 @@ To manage dependencies cleanly and ensure smooth server deployment, the Sandman 
 ### Docker Deployment
 When deployed to a server, Sandman uses a Monolithic Docker approach:
 - **One Container:** A single Docker container is built for the entire Sandman Orchestration Suite.
-- **Volume Mapping:** Paths defined in the Configuration (such as `output_directory`, `data_directory`, and `auth_directory`) are mapped as Docker Volumes. This allows the internal modules to read API keys from the host server and write Markdown files directly to the host's live Obsidian vault.
+- **Volume Mapping:** Paths defined in the Configuration (such as `md_output_directory`, `data_output_directory`, and `auth_directory`) are mapped as Docker Volumes. This allows the internal modules to read API keys from the host server and write Markdown files directly to the host's live Obsidian vault.
 
 ## 14. Bootstrapping a New Module's Development
 
@@ -270,6 +279,7 @@ These variables define **how** to query the source and **what** to ignore.
 | **`blacklist_urls`** | Config / CLI (`--blacklist-urls`) / Python | List of domain fragments to ignore when capturing links. |
 | **`min_age_hours`** | Config / CLI (`--min-age-hours`) / Python | Minimum time a post must exist before it is considered mature. |
 | **`max_age_hours`** | Config / CLI (`--max-age-hours`) / Python | Maximum age for a post to be considered fresh/relevant. |
+| **`rescrape_threshold_hours`** | Config / CLI / Python | Triggers maturity queue. If younger than limit, queue for rescrape. |
 
 ---
 
@@ -281,8 +291,10 @@ These variables dictate the **size** and **retention** of your data footprint.
 | :--- | :--- | :--- |
 | **`max_results`** | Config / CLI (`--max-results`) / Python | The maximum number of new items to fetch during a single run. |
 | **`db_limit`** | Config / CLI (`--db-limit`) / Python | Footprint control. The maximum number of records to keep in the SQLite cache. |
+| **`offset`** | Config / CLI (`--offset`) / Python | Integer. Skips the first N results before processing. |
 | **`save_json`** | Config / CLI (`--save-json`) / Python | Boolean. Whether to save a sanitized `.json` copy alongside the markdown. |
 | **`md_log`** | Config / CLI (`--md-log`) / Python | Boolean. Whether to append run results to the human-readable Scrape Log. |
+| **`verbose`** | Config / CLI (`--verbose`) / Python | Integer (0, 1, 2). Controls console output verbosity. |
 
 ---
 

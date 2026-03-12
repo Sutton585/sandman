@@ -7,8 +7,8 @@ files_to_update = [
     'modules/unified_module_blueprint.md',
     'modules/reddit2md/README.md',
     'modules/reddit2md/architecture.md',
-    'modules/job2md/README.md',
-    'modules/job2md/architecture.md',
+    'modules/jobs2md/README.md',
+    'modules/jobs2md/architecture.md',
     'modules/gmail2md/README.md',
     'modules/gmail2md/architecture.md',
     'modules/web2md/README.md',
@@ -35,7 +35,7 @@ replacements = [
     (r'Job-Specific', 'Task-Specific')
 ]
 
-# We don't want to replace the word "job" in the context of employment (especially in job2md).
+# We don't want to replace the word "job" in the context of employment (especially in jobs2md).
 # So we are very specific with our replacements above.
 
 for filepath in files_to_update:

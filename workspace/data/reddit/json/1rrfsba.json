@@ -1,0 +1,49 @@
+{
+  "post_id": "1rrfsba",
+  "title": "Python with typing",
+  "poster": "Ancient_Farm_5132",
+  "source": "Python",
+  "permalink": "/r/Python/comments/1rrfsba/python_with_typing/",
+  "selftext": "In 2014\u20132015, the question was:\n \u201cShould Python remain fully dynamic or should it accept static typing?\u201d \nPython has always been famous for being simple and dynamic.\n\n But when companies started using Python in giant projects, problems arose such as: code with thousands of files. large teams. difficult-to-find type errors. \n\nAt the time, some programmers wanted Python to have mandatory typing, similar to Java.\n\nOthers thought this would ruin the simplicity of the language.\n\n The discussion became extensive because Python has always followed a philosophy called:\n\n \"The Zen of Python\" \n\nOne of the most famous phrases is: \n\n\"Simple is better than complex.\n\n\" The creator of Python, Guido van Rossum, approved an intermediate solution.\n\n PEP 484 was created, which introduced type hints. \n\n\ud83d\udc49 PEP 484 \u2013 Type Hints \n\nDo you think this was the right thing to do, or could typing be mandatory?",
+  "score": 0,
+  "upvote_ratio": 0.25,
+  "num_comments": 4,
+  "domain": "self.Python",
+  "is_video": false,
+  "is_gallery": false,
+  "stickied": false,
+  "spoiler": false,
+  "over_18": false,
+  "author_flair": null,
+  "post_flair": "Discussion",
+  "subreddit_subscribers": 1458198,
+  "created_utc": 1773285871.0,
+  "scraped_utc": 1773285871.0,
+  "url_overridden_by_dest": null,
+  "comments": [
+    {
+      "poster": "its_a_gibibyte",
+      "score": 1,
+      "body": "Type hints are better than runtime errors anyway. You want to find errors in your editor rather than when your code runs. ",
+      "replies": []
+    },
+    {
+      "poster": "_real_ooliver_",
+      "score": 1,
+      "body": "Not even sure why this would be a conversation. I always use typing but would never advocate for it being mandatory as that removes the easiness of scripting without perfect types.\n\nAnyone's free to use a type checker and enforce typing with strict modes on those; strict by the way not default on even those.",
+      "replies": []
+    },
+    {
+      "poster": "kinky_flamingo",
+      "score": 1,
+      "body": "Fuck AI",
+      "replies": []
+    },
+    {
+      "poster": "Empanatacion",
+      "score": 1,
+      "body": "Mandatory typing would just turn it into poorly performing java.\n\nDifferent tools for different needs. ",
+      "replies": []
+    }
+  ]
+}

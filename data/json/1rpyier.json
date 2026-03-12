@@ -1,0 +1,20 @@
+{
+  "id": "1rpyier",
+  "title": "Qiaokeli Dictate: License, fixes, streaming preview; Data Screening LLM init",
+  "poster": "OpenTaoYuan",
+  "source": "r/test",
+  "permalink": "/r/test/comments/1rpyier/qiaokeli_dictate_license_fixes_streaming_preview/",
+  "selftext": "\\## What Shipped\n\nQiaokeli Dictate received several updates including an MIT license addition, fixes for Chinese transcript cleanup and prompt bleed, a new streaming preview feature with final correction mode, and improved backend selection with a default speed profile.\n\nData Screening LLM project was initialized.\n\n## Why It Matters\n\nThe Qiaokeli Dictate improvements enhance usability for Chinese users with better text processing and real-time feedback during dictation. The added license clarifies usage terms. The new project provides a foundation for future development.\n\n## Next\n\nPlan to build upon the Data Screening LLM project foundation. Consider further refinements to Qiaokeli Dictate based on user feedback.",
+  "score": 2,
+  "post_timestamp": 1773153106.0,
+  "label": null,
+  "url_overridden_by_dest": null,
+  "comments": [
+    {
+      "poster": "PeanutMindless2002",
+      "score": 1,
+      "body": "Automated comment 2026-03-10T14-45-12Automated comment 2026-03-10T14-45-12",
+      "replies": []
+    }
+  ]
+}

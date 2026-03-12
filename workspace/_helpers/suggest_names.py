@@ -1,0 +1,5 @@
+print("Naming suggestions for maturity rescrape parameter:")
+print("1. maturity_age_hours - Focuses on the concept of 'maturity' which is already used in docs.")
+print("2. rescrape_if_younger_than - Highly explicit, matches your suggestion.")
+print("3. rescrape_threshold_hours - Sounds technical, clearly links to the rescrape logic.")
+print("4. mature_after_hours - Simple, indicates state change.")

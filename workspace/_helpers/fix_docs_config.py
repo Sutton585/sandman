@@ -4,8 +4,8 @@ import os
 files_to_update = [
     'modules/reddit2md/README.md',
     'modules/reddit2md/architecture.md',
-    'modules/job2md/README.md',
-    'modules/job2md/architecture.md',
+    'modules/jobs2md/README.md',
+    'modules/jobs2md/architecture.md',
     'modules/unified_module_blueprint.md',
     'README.md'
 ]

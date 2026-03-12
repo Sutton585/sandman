@@ -16,7 +16,7 @@ new_section = """### A. The Configuration File (`config.yml`)
 **YAML Configuration Standard:** All Sandman modules MUST use YAML (`config.yml`) for their configuration files. While JSON was considered for strict standard-library portability, YAML is the officially supported standard because it allows for inline comments (`#`), which is critical for user-facing configuration files where complex parameters need explanation.
 
 Used for persistent, automated, daily-driver setups. It must contain:
-1.  **Global Defaults (`global_defaults`)**: A block defining fallback behaviors (like output directories, default logging verbosity, etc).
+1.  **Global Defaults (`settings`)**: A block defining fallback behaviors (like output directories, default logging verbosity, etc).
 2.  **Job Queue (`jobs`)**: An array of specific target entities and any custom overrides for that specific target."""
 
 content = content.replace(old_section, new_section)

@@ -47,7 +47,7 @@ def update_markdown_files():
                 for pattern, replacement in replacements:
                     new_content = re.sub(pattern, replacement, new_content, flags=re.IGNORECASE if "config" not in pattern else 0)
                 
-                # Special handling for job2md specific cases to ensure we don't break employment references
+                # Special handling for jobs2md specific cases to ensure we don't break employment references
                 # Actually, the regex \b (word boundary) should handle most cases.
                 
                 if new_content != content:
